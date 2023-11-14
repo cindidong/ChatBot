@@ -1,10 +1,63 @@
-import json
+import json, urllib.request
 from flask import Flask, jsonify, request
-from model.message import Message, MessageSchema
-from model.serviceSurvey import serviceDecisionTree
-from model.productSurvey import productDecisionTree
+from flask_sqlalchemy import SQLAlchemy
+import psycopg2
+from dotenv import load_dotenv
+import os
+from api.database import db
+from api.model.message import Message, MessageSchema
+from api.model.serviceSurvey import serviceDecisionTree
+from api.model.productSurvey import productDecisionTree
+from api.model.carSurvey import carDecisionTree
 
-app = Flask(__name__)
+
+from . import create_app # from __init__ file
+
+
+# PostgreSQL Database credentials loaded from the .env file
+# DATABASE = os.getenv('DATABASE')
+# DATABASE_USERNAME = os.getenv('DATABASE_USERNAME')
+# DATABASE_PASSWORD = os.getenv('DATABASE_PASSWORD')
+
+load_dotenv()  # loads variables from .env file into environment
+
+# app = Flask(__name__)
+# url = os.environ.get("DATABASE_URL")  # gets variables from environment
+# connection = psycopg2.connect(url)
+
+# def get_db_connection():
+#     conn = psycopg2.connect(host='localhost', database='cindidong', user=os.environ['DB_USERNAME'], password=os.environ['DB_PASSWORD'])
+#     return conn
+
+'''
+conn = get_db_connection()
+cur = conn.cursor()
+cur.execute('SELECT * FROM books;')
+books = cur.fetchall()
+cur.close()
+conn.close()
+'''
+
+app = create_app(os.getenv("CONFIG_MODE"))
+
+# def create_app():    
+#     app = Flask(__name__)        
+#     app.config.from_mapping(
+#         SECRET_KEY = "My_Secret_Key"
+#     )     
+    
+#     app.config.from_object(CoolConfig)    
+    
+#     # Database related part
+#     db.init_app(app)
+#     from best_app.models.user import User
+#     from best_app.models.car import Car
+#     migrate = Migrate(app, db)
+
+#     app.register_blueprint(hello.blueprint)
+#     app.register_blueprint(goodbye.blueprint)
+
+#     return app
 
 counter = float(0)
 current_step = ""
@@ -24,6 +77,8 @@ def get_template(template):
         return serviceDecisionTree
     elif template == "product":
         return productDecisionTree
+    elif template == "car":
+        return carDecisionTree
     else:
         return None
 
@@ -55,7 +110,49 @@ def handle_chatbot_message(message, template):
         return new_message
     else:
         return ""
+    
 
+def handle_car_chatbot_message(message, template):
+    global counter
+    global current_step
+    next_step = current_step
+    question = ""
+    if message.getNeedResponse():
+        if current_step:
+            if "record" in template[current_step]:
+                next_step = template[current_step]["next"]
+            else:
+                if "next" in template[current_step]:
+                    if message.getText().lower() in template[current_step]["next"]:
+                        next_step = template[current_step]["next"][message.getText().lower()]
+                    else:
+                        # next_step = current_step
+                        additional_text = "I'm sorry, I didn't understand your response. Let's try again. "
+                        return Message(float(counter), additional_text + template[current_step]["question"], True, template[current_step]["needResponse"], template[current_step]["needButton"], message.getSurveyType())
+                else:
+                    current_step = ""
+                    print("finished")
+                    return ""
+        else:
+            question = get_cars()
+            next_step = "STEP1"
+        if not question:
+            question = template[next_step]["question"]
+        new_message = Message(float(counter), question, True, template[next_step]["needResponse"], template[next_step]["needButton"], message.getSurveyType())
+        current_step = next_step
+        return new_message
+    else:
+        return ""
+
+
+# GET all the chat messages
+@app.route("/api/cars")
+def get_cars():
+    url = "https://62daf70dd1d97b9e0c49ca5d.mockapi.io/v1/products"
+    response = urllib.request.urlopen(url)
+    data = response.read()
+    dict = json.loads(data)
+    return dict
 
 # GET all the chat messages
 @app.route("/api/messages")
@@ -79,7 +176,10 @@ def add_message():
     counter = float(counter + 1)
     template = get_template(message.getSurveyType())
     if template:
-        newMessage = handle_chatbot_message(message, template)
+        if message.getSurveyType() == "car":
+            newMessage = handle_car_chatbot_message(message, template)
+        else:
+            newMessage = handle_chatbot_message(message, template)
         if newMessage == "":
             print("no response")
         else:
@@ -87,6 +187,8 @@ def add_message():
     write_output()
     return "", 200
 
+# CRUD operations for messages
+from .messages import urls
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', debug=True, port=5328)

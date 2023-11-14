@@ -1,5 +1,5 @@
-## Introduction
-Simple Chatbot to gather reviews from customers. Scans for "thank you" in the customer chat message (likely to be a response to a customer service interaction), then starts the service agent review process. Stores the chat messages in a JSON file on the local file system.
+## Review Chat Bot
+Interactive chat bot to gather reviews from customers. Scans for "thank you" in the customer chat message (simulates the end of a customer service interaction), then starts the service agent review process. If the user switches to another tab (simulates the process of a purchase/a cart check out), then the chat bot starts the product review process. Stores the chat messages in a JSON file on the local file system.
 
 ## How To Run Locally
 ```

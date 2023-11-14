@@ -19,7 +19,9 @@ const ChatBottom = ({ sendRequest, getLastBotMessage }) => {
     // after interaction with customer service agent, need server response
     // if server needs a response, clients needs one
     // if server doesn't need a response, client doesn't need one
-    if (value.toLowerCase().includes("thank")) {
+    if (value.toLowerCase() == "cars") {
+      await sendRequest(value, true, "car");
+    } else if (value.toLowerCase().includes("thank")) {
       await sendRequest(value, true, "service");
     } else if (lastBotMessage && lastBotMessage.needResponse) {
       await sendRequest(value, true, lastBotMessage.surveyType);
@@ -28,7 +30,6 @@ const ChatBottom = ({ sendRequest, getLastBotMessage }) => {
     }
     setValue("");
   };
-
 
   return (
     <form
