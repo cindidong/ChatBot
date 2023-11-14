@@ -44,9 +44,8 @@ chatLogs.json
 /venv
 /api/venv/
 
-/api/.env
-
 # Pycharm
 .idea
 
+# DB migrations
 /api/migrations

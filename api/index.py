@@ -27,7 +27,7 @@ load_dotenv()  # loads variables from .env file into environment
 # connection = psycopg2.connect(url)
 
 # def get_db_connection():
-#     conn = psycopg2.connect(host='localhost', database='cindidong', user=os.environ['DB_USERNAME'], password=os.environ['DB_PASSWORD'])
+#     conn = psycopg2.connect(host='localhost', database='testdb', user=os.environ['DB_USERNAME'], password=os.environ['DB_PASSWORD'])
 #     return conn
 
 '''
@@ -169,9 +169,10 @@ def get_messages():
 def add_message():
     # handle customer message
     # global counter
+    result = ""
     message = MessageSchema().load(request.get_json())
     if message.getText():
-        create_new_message_controller(message)
+        result = create_new_message_controller(message)
         # counter = float(counter + 1)
         # message.setID(counter)
         # messages.append(message)
@@ -186,10 +187,10 @@ def add_message():
         if newMessage == "":
             print("no response")
         else:
-            create_new_message_controller(newMessage)
+            result = create_new_message_controller(newMessage)
             # messages.append(newMessage)
     write_output()
-    return "", 200
+    return result, 200
 
 # CRUD operations for messages
 from .messages import urls
