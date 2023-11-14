@@ -32,7 +32,7 @@ export default function Home() {
 
   function generatePayload(textValue: string, needResponseValue: boolean, surveyValue: string) {
     return {
-      id: 1.0,
+      id: 1,
       text: textValue,
       isBot: false,
       needResponse: needResponseValue,

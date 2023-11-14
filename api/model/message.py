@@ -2,7 +2,7 @@ from marshmallow import Schema, fields, post_load
 
 
 class Message(object):
-    def __init__(self, id: float, text: str, isBot: bool, needResponse: bool, needButton: bool, surveyType: str):
+    def __init__(self, id: int, text: str, isBot: bool, needResponse: bool, needButton: bool, surveyType: str):
         self.id = id
         self.text = text
         self.isBot = isBot
@@ -20,7 +20,7 @@ class Message(object):
         return self.text
     
     def getIsBot(self):
-        return self.getIsBot
+        return self.isBot
     
     def setIsBot(self, newIsBot):
         self.isBot = newIsBot
@@ -46,7 +46,7 @@ class Message(object):
 
 
 class MessageSchema(Schema):
-    id = fields.Float()
+    id = fields.Int()
     text = fields.Str()
     isBot = fields.Bool()
     needResponse = fields.Bool()

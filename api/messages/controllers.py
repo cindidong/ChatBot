@@ -1,8 +1,8 @@
 from flask import request, jsonify
-import uuid
 
 from api.database import db
 from .models import Messages
+from api.model.message import Message
 
 # ----------------------------------------------- #
 
@@ -18,11 +18,8 @@ def list_all_messages_controller():
 
 def create_message_controller():
     body = request.get_json()
-    print(body)
 
-    # id = str(uuid.uuid4())
     new_message = Messages(
-        id = body['id'],
         text = body['text'],
         isBot = body['isBot'],
         needResponse = body['needResponse'],
@@ -32,7 +29,21 @@ def create_message_controller():
     db.session.add(new_message)
     db.session.commit()
 
-    response = Messages.query.get(id).toDict()
+    response = Messages.query.get(new_message.id).toDict()
+    return jsonify(response)
+
+def create_new_message_controller(message: Message):
+    new_message = Messages(
+        text = message.getText(),
+        isBot = message.getIsBot(),
+        needResponse = message.getNeedResponse(),
+        needButton = message.getNeedButton(),
+        surveyType = message.getSurveyType(),
+        )
+    db.session.add(new_message)
+    db.session.commit()
+
+    response = Messages.query.get(new_message.id).toDict()
     return jsonify(response)
 
 def retrieve_message_controller(message_id):

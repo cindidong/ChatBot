@@ -10,8 +10,8 @@ def list_create_accounts():
     else: return 'Method is Not Allowed'
 
 @app.route("/messages/<message_id>", methods=['GET', 'PUT', 'DELETE'])
-def retrieve_update_destroy_accounts(account_id):
-    if request.method == 'GET': return retrieve_message_controller(account_id)
-    if request.method == 'PUT': return update_message_controller(account_id)
-    if request.method == 'DELETE': return delete_message_controller(account_id)
+def retrieve_update_destroy_accounts(message_id):
+    if request.method == 'GET': return retrieve_message_controller(message_id)
+    if request.method == 'PUT': return update_message_controller(message_id)
+    if request.method == 'DELETE': return delete_message_controller(message_id)
     else: return 'Method is Not Allowed'

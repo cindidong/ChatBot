@@ -9,6 +9,7 @@ from api.model.message import Message, MessageSchema
 from api.model.serviceSurvey import serviceDecisionTree
 from api.model.productSurvey import productDecisionTree
 from api.model.carSurvey import carDecisionTree
+from api.messages.controllers import list_all_messages_controller, create_new_message_controller
 
 
 from . import create_app # from __init__ file
@@ -59,7 +60,7 @@ app = create_app(os.getenv("CONFIG_MODE"))
 
 #     return app
 
-counter = float(0)
+# counter = float(0)
 current_step = ""
 messages = []
 # Message(float(counter), 'Hi!', True, False, False)
@@ -84,7 +85,7 @@ def get_template(template):
 
 
 def handle_chatbot_message(message, template):
-    global counter
+    # global counter
     global current_step
     next_step = current_step
     if message.getNeedResponse():
@@ -98,14 +99,14 @@ def handle_chatbot_message(message, template):
                     else:
                         # next_step = current_step
                         additional_text = "I'm sorry, I didn't understand your response. Let's try again. "
-                        return Message(float(counter), additional_text + template[current_step]["question"], True, template[current_step]["needResponse"], template[current_step]["needButton"], message.getSurveyType())
+                        return Message(1, additional_text + template[current_step]["question"], True, template[current_step]["needResponse"], template[current_step]["needButton"], message.getSurveyType())
                 else:
                     current_step = ""
                     print("finished")
                     return ""
         else:
             next_step = "STEP1"
-        new_message = Message(float(counter), template[next_step]["question"], True, template[next_step]["needResponse"], template[next_step]["needButton"], message.getSurveyType())
+        new_message = Message(1, template[next_step]["question"], True, template[next_step]["needResponse"], template[next_step]["needButton"], message.getSurveyType())
         current_step = next_step
         return new_message
     else:
@@ -113,7 +114,7 @@ def handle_chatbot_message(message, template):
     
 
 def handle_car_chatbot_message(message, template):
-    global counter
+    # global counter
     global current_step
     next_step = current_step
     question = ""
@@ -128,17 +129,17 @@ def handle_car_chatbot_message(message, template):
                     else:
                         # next_step = current_step
                         additional_text = "I'm sorry, I didn't understand your response. Let's try again. "
-                        return Message(float(counter), additional_text + template[current_step]["question"], True, template[current_step]["needResponse"], template[current_step]["needButton"], message.getSurveyType())
+                        return Message(1, additional_text + template[current_step]["question"], True, template[current_step]["needResponse"], template[current_step]["needButton"], message.getSurveyType())
                 else:
                     current_step = ""
                     print("finished")
                     return ""
         else:
-            question = get_cars()
+            question = json.dumps(get_cars())
             next_step = "STEP1"
         if not question:
             question = template[next_step]["question"]
-        new_message = Message(float(counter), question, True, template[next_step]["needResponse"], template[next_step]["needButton"], message.getSurveyType())
+        new_message = Message(1, question, True, template[next_step]["needResponse"], template[next_step]["needButton"], message.getSurveyType())
         current_step = next_step
         return new_message
     else:
@@ -157,23 +158,25 @@ def get_cars():
 # GET all the chat messages
 @app.route("/api/messages")
 def get_messages():
-    schema = MessageSchema(many=True)
-    result = schema.dump(messages)
-    return jsonify(result)
+    # schema = MessageSchema(many=True)
+    # result = schema.dump(messages)
+    # return jsonify(result)
+    return list_all_messages_controller()
 
 
 # add user message + generate next message
 @app.route('/api/messages', methods=['POST'])
 def add_message():
     # handle customer message
-    global counter
+    # global counter
     message = MessageSchema().load(request.get_json())
     if message.getText():
-        counter = float(counter + 1)
-        message.setID(counter)
-        messages.append(message)
+        create_new_message_controller(message)
+        # counter = float(counter + 1)
+        # message.setID(counter)
+        # messages.append(message)
     # send chatbot message
-    counter = float(counter + 1)
+    # counter = float(counter + 1)
     template = get_template(message.getSurveyType())
     if template:
         if message.getSurveyType() == "car":
@@ -183,7 +186,8 @@ def add_message():
         if newMessage == "":
             print("no response")
         else:
-            messages.append(newMessage)
+            create_new_message_controller(newMessage)
+            # messages.append(newMessage)
     write_output()
     return "", 200
 
